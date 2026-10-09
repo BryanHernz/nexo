@@ -2,4 +2,5 @@
 export const APPS = Object.freeze([
   { id: 'nova-star', key: 'novaStar', name: 'Nova Star' },
   { id: 'carton-lleno', key: 'cartonLleno', name: 'Cartón Lleno' },
+  { id: 'contrapalabra', key: 'contrapalabra', name: 'Contrapalabra' },
 ]);

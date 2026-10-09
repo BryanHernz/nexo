@@ -3,7 +3,7 @@ import { PAIRING_API_ORIGIN } from './pair-config.mjs';
 export class ReleaseError extends Error {
   constructor(status) { super('release_request_failed'); this.status = status; }
 }
-const APPS = ['novaStar', 'cartonLleno'];
+const APPS = ['novaStar', 'cartonLleno', 'contrapalabra'];
 const versionPattern = /^(0|[1-9]\d{0,5})\.(0|[1-9]\d{0,5})\.(0|[1-9]\d{0,5})$/;
 export function validateRelease(value, app) {
   if (!value || value.schemaVersion !== 1 || value.app !== app || !versionPattern.test(value.version) ||

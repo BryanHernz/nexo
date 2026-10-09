@@ -33,7 +33,7 @@ export class ReleaseService {
     try { access = await this.options.access(uid); }
     catch { throw new ApiError(503, 'access_unavailable'); }
     if (access?.active !== true) throw new ApiError(403, 'access_denied');
-    const apps = (['novaStar', 'cartonLleno'] as AppId[]).filter(app => access.apps?.[app] === true);
+    const apps = (['novaStar', 'cartonLleno', 'contrapalabra'] as AppId[]).filter(app => access.apps?.[app] === true);
     if (!apps.length) throw new ApiError(403, 'access_denied');
     return apps;
   }

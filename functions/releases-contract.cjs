@@ -1,5 +1,5 @@
 'use strict';
-const APPS = ['novaStar', 'cartonLleno'];
+const APPS = ['novaStar', 'cartonLleno', 'contrapalabra'];
 const ARCHITECTURES = ['x64', 'arm64-v8a', 'armeabi-v7a', 'x86_64', 'universal'];
 const idPattern = /^[A-Za-z0-9][A-Za-z0-9._-]{2,159}$/;
 function exact(value, keys) {

@@ -1,0 +1,26 @@
+CONTRAPALABRA — REGISTRO CENTRAL PARA REVISIÓN (Fase 1.7)
+
+Base origin/main: ca0c136b29962e1851f123b9d3004acd42d29d9c.
+Rama: phase-1-7-contrapalabra-access. No merge, deploy, release ni cambios de datos.
+
+La lista exacta se preparó antes de modificar fuentes (alcance-previo.txt).
+Cambios finales: AppId/APPS, validación de creación pairing, acceso genérico por app,
+allowlist portal/releases/manifests privados, tarjeta y navegación privadas del Hub,
+/download/contrapalabra con/sin slash, theme/light/leaf y logo/font/captura propios.
+Las modificaciones CSS sólo afectan data-app/data-product=contrapalabra.
+El router, expiración, consumo único, hash de código, CORS y seguridad del pairing
+se conservan. QA adapta origen local en el harness externo, no en Nexo.
+
+access/{uid}.apps.contrapalabra debe otorgarse específicamente al aprobar el uso;
+no se concede automáticamente, ni hay scripts que modifiquen cuentas de producción.
+No se añaden manifests/versiones, y las descargas siguen deshabilitadas si no hay release.
+No se modifica updater ni ninguna app existente. La autorización no crea jugadores.
+
+Verificación: 148 pruebas portal, 156 backend; npm run check/build y lint functions.
+QA de Contrapalabra ejecuta este PairingService/router contra Auth/Firestore emulados
+con proyecto demo fijo. Incluye aprobación UI real, custom token, gate, persistencia
+Windows y logout. Consulte docs/fase-1-7/arquitectura.html y QA-local.txt en Contrapalabra.
+
+Antes de producción: revisar diff/SHA, reglas reales de Firestore (no están en este repo),
+cuentas autorizadas, configuración de origen y posterior distribución privada.
+La publicación y deploy requieren aprobación futura explícita, no están realizados.

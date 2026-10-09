@@ -1,0 +1,28 @@
+Fase 1.7 — lista previa a modificar Nexo
+9 de octubre de 2026
+
+Mains remotos revisados en copias limpias:
+Nexo: ca0c136b29962e1851f123b9d3004acd42d29d9c
+Nova Star: b68f593bd2b821ad575bf7bec12543d51ba83ddc
+Cartón Lleno: 089e483489afe555558b69eac56e792d459f556c
+Contrapalabra main integrado: c4b4c042d77b0ba9ff4c4cd58bb76abf313195cd
+
+Cambios centrales de código necesarios, en rama separada:
+- functions/src/tv/validation.ts: incluir contrapalabra en AppId/APPS/isApp.
+- functions/releases-contract.cjs, functions/src/releases/service.ts y private-releases.mjs: reconocer la app; mantener el gate activo y el permiso por app.
+- functions/src/releases/portal.ts: filtrar también los bloques Contrapalabra del HTML autenticado y resolver su nombre.
+- functions/portal-content.html, config.mjs y portal-gate.mjs: tarjeta privada Contrapalabra y categoría Palabras sólo para cuentas autorizadas. No afirmar que hay artefactos publicados.
+- pair.mjs, pair.css y assets: nombre/theme Color que enseña, elegido por metadata validada. No modificar los themes anteriores.
+- download.mjs y firebase.json: reconocer la ruta privada /download/contrapalabra. La PWA y el juego tienen destinos distintos.
+- Tests de pairing, permiso exclusivo Contrapalabra, filtro servidor/Hub, themes, manifests y descargas; conservar regresiones Nova/Cartón.
+
+Sin cambios de datos ni infraestructura:
+- No escribir access/{uid} en producción. apps.contrapalabra sólo se concede en fixtures locales de QA.
+- No modificar Firestore desplegado, IAM, bucket, secrets ni hosting.
+- No publicar manifests/artefactos ni crear repositorios de versiones.
+- Registro del publicador/preflight, permisos IAM de latest y artefactos firmados se documentan para distribución; no se necesitan para demostrar Auth/pairing local y no se ejecutan en esta etapa.
+- Reglas efectivas access/tvPairings deberán verificarse antes de integrar producción. Las copias auditadas no acreditan el estado desplegado.
+
+QA reutilizará el PairingService y createHttpApp centrales con Auth/Firestore de emuladores en un proyecto demo aislado; no implementará un pairing de producción alternativo. No hay deploy ni merge de la rama central autorizado en esta entrega.
+
+Contrapalabra: adaptador Firebase Auth REST y refresh token en almacenamiento seguro, acceso exacto active/apps.contrapalabra, pairing central, logout/revinculación, caché offline de siete días vinculada al UID y sin renovar offline. El piloto LOCAL_CONTROLLERS seguirá disponible sólo en debug, sin iniciar Auth. Los jugadores permanecen locales, sin cuentas Firebase.

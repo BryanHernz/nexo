@@ -26,12 +26,12 @@ test('el monograma SVG coincide en navbar, hero, pie y favicon', () => {
   } finally { dom.window.close(); mark.window.close(); favicon.window.close(); }
 });
 
-test('la navegación conserva sus cuatro destinos sin CTA explorar duplicado', () => {
+test('la navegación incorpora Contrapalabra sin CTA explorar duplicado', () => {
   const dom = new JSDOM(html);
   try {
     const nav = dom.window.document.getElementById('site-nav');
     assert.deepEqual([...nav.querySelectorAll('[data-chapter]')].map(link => link.getAttribute('href')),
-      ['#nova-star', '#carton-lleno', '#descargas', '#ayuda']);
+      ['#nova-star', '#carton-lleno', '#contrapalabra', '#descargas', '#ayuda']);
     assert.equal(nav.querySelector('.mobile-cta'), null);
     assert.equal(dom.window.document.querySelector('.header-inner > .header-cta'), null);
     assert.doesNotMatch(html, /data-motion-toggle|Animaciones activas/);

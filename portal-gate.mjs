@@ -30,7 +30,7 @@ export function restrictProducts(document, apps) {
   if (description) description.textContent = `Descubre ${apps.map(app => app.name).join(' y ')}. Elige tu pantalla y empieza a jugar.`;
   if (apps.length === 1) {
     document.querySelector('.art-aside')?.remove();
-    document.querySelector('.hero-domain').textContent = apps[0].key === 'novaStar' ? 'KARAOKE' : 'BINGO';
+    document.querySelector('.hero-domain').textContent = apps[0].key === 'novaStar' ? 'KARAOKE' : apps[0].key === 'cartonLleno' ? 'BINGO' : 'PALABRAS';
   }
 }
 

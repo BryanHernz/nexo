@@ -1,6 +1,6 @@
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 
-export const APPS = ['cartonLleno', 'novaStar'] as const;
+export const APPS = ['cartonLleno', 'novaStar', 'contrapalabra'] as const;
 export type AppId = typeof APPS[number];
 export const BODY_LIMIT = 1024;
 
@@ -11,7 +11,7 @@ export class ApiError extends Error {
 }
 
 export function isApp(value: unknown): value is AppId {
-  return value === 'cartonLleno' || value === 'novaStar';
+  return value === 'cartonLleno' || value === 'novaStar' || value === 'contrapalabra';
 }
 
 function objectBody(value: unknown, allowedKeys: string[]): Record<string, unknown> {

@@ -2294,3 +2294,10 @@ h2{
 @media(prefers-reduced-motion:reduce){.login-scene{animation:none;translate:none}.login-submit,.portal-login-card input{transition:none}.login-submit:active{transform:none}}
 #portal-logout { flex-shrink: 0; min-height: 44px; }
 @media (max-width: 600px) { #portal-logout { font-size: 12px; padding-inline: 10px; } }
+
+/* Contrapalabra: product scope only; existing products keep their theme. */
+@font-face{font-family:ContrapalabraAtkinson;src:url("assets/fonts/contrapalabra-atkinson.ttf") format("truetype");font-weight:100 900;font-display:swap}
+.product.contrapalabra{background:#f4f6f5;color:#25343a;font-family:ContrapalabraAtkinson,system-ui,sans-serif}
+.product.contrapalabra h2,.product.contrapalabra .product-brand,.product.contrapalabra .eyebrow{color:#3f6d3e}
+.product.contrapalabra .product-description{color:#53616a}.product.contrapalabra .button{background:#e8f0e5;color:#3f6d3e;border:0;border-radius:16px}
+.product.contrapalabra .product-media>img{width:100%;height:auto;border-radius:24px}.product.contrapalabra .download-status{color:#53616a}

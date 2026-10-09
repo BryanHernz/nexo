@@ -2,6 +2,7 @@ import { connectFirebaseAuth } from './pair-auth.mjs';
 import { createPairingFlow, pairingIdFromPath, loadPairingMetadata } from './pairing.mjs';
 
 const PAIR_APPEARANCES = Object.freeze({
+  contrapalabra: { name: 'Contrapalabra', logo: '/assets/contrapalabra-mark.svg', screen: '/assets/screens/contrapalabra-hueco.png', accent: '#3f6d3e', background: '#f4f6f5', tagline: 'Juguemos con las palabras.' },
   novaStar: { name: 'Nova Star', logo: '/assets/nova-star-logo.png', screen: '/assets/screens/nova-duet.webp', accent: '#ffb156', background: '#050a13', tagline: 'Tu voz. Tu escenario.' },
   cartonLleno: { name: 'Cartón Lleno', logo: '/assets/carton-mark.webp', screen: '/assets/screens/carton-75.webp', accent: '#fad703', background: '#f2f0e6', tagline: 'Que empiece la buena suerte.' },
 });

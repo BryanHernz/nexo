@@ -225,7 +225,7 @@ test('Hosting reescribe sólo apps conocidas, preserva /pair y protege respuesta
   assert.equal(config.hosting.target, 'portal');
   const routes = config.hosting.rewrites.filter(rule => rule.destination === '/download.html');
   assert.deepEqual(routes.map(rule => rule.source).sort(), [
-    '/download/cartonLleno', '/download/cartonLleno/', '/download/novaStar', '/download/novaStar/',
+    '/download/cartonLleno', '/download/cartonLleno/', '/download/contrapalabra', '/download/contrapalabra/', '/download/novaStar', '/download/novaStar/',
   ]);
   assert.ok(!config.hosting.rewrites.some(rule => rule.source === '/download/**'));
   for (const source of ['/download/**', '/download.html']) {

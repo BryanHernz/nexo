@@ -1,9 +1,9 @@
 import { createReleaseClient, ReleaseError } from './private-releases.mjs';
 
-const apps = Object.freeze({ novaStar: 'Nova Star', cartonLleno: 'Cartón Lleno' });
+const apps = Object.freeze({ novaStar: 'Nova Star', cartonLleno: 'Cartón Lleno', contrapalabra: 'Contrapalabra' });
 
 export function appFromDownloadPath(pathname) {
-  const match = /^\/download\/(novaStar|cartonLleno)\/?$/.exec(pathname);
+  const match = /^\/download\/(novaStar|cartonLleno|contrapalabra)\/?$/.exec(pathname);
   return match ? match[1] : null;
 }
 
