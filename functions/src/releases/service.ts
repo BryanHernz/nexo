@@ -1,12 +1,10 @@
 import { ApiError, AppId } from '../tv/validation';
+import { eligibleUserUid, IdentityAuth } from '../auth/identity';
 import { appId, assetId, assetPath, digest, exact, generation, hash, publicManifest,
   record, timestamp, validateManifest, versionId } from './manifest';
 
 export const DOWNLOAD_TTL_MS = 5 * 60 * 1000;
-export interface ReleaseAuth {
-  verifyIdToken(token: string, checkRevoked: boolean): Promise<{ uid: string; firebase?: { sign_in_provider?: string } }>;
-  getUser(uid: string): Promise<{ uid: string; disabled: boolean; providerData: { providerId: string }[] }>;
-}
+export type ReleaseAuth = IdentityAuth;
 export interface StoredJson { bytes: Buffer; generation: string; sha256?: string }
 export interface ReleaseStorage {
   read(path: string, generation?: string): Promise<StoredJson | null>;
@@ -23,11 +21,7 @@ export class ReleaseService {
   async authorizePortal(token: string) {
     let uid: string;
     try {
-      const decoded = await this.options.auth.verifyIdToken(token, true);
-      const user = await this.options.auth.getUser(decoded.uid);
-      if (user.disabled || user.uid !== decoded.uid || decoded.firebase?.sign_in_provider === 'anonymous' ||
-        !user.providerData.some(p => p.providerId === 'password')) throw new Error('invalid_identity');
-      uid = decoded.uid;
+      uid = await eligibleUserUid(this.options.auth, token);
     } catch { throw new ApiError(401, 'authentication_required'); }
     let access;
     try { access = await this.options.access(uid); }

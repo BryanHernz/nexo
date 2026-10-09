@@ -1,5 +1,6 @@
 import { randomBytes, randomInt } from 'node:crypto';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { assertEligibleAccount, eligibleUserUid, IdentityAuth, IneligibleIdentityError } from '../auth/identity';
 import {
   ApiError, AppId, equalHash, hashCode, hashPollToken, portalOrigin,
 } from './validation';
@@ -37,8 +38,7 @@ export interface PairingStore {
   transaction<T>(work: (tx: PairingTransaction) => Promise<T>): Promise<T>;
 }
 
-export interface AuthGateway {
-  verifyIdToken(token: string): Promise<{ uid: string }>;
+export interface AuthGateway extends IdentityAuth {
   createCustomToken(uid: string): Promise<string>;
 }
 
@@ -84,8 +84,9 @@ export class PairingService {
 
   async verifyUser(token: string): Promise<string> {
     try {
-      return (await this.deps.auth.verifyIdToken(token)).uid;
-    } catch {
+      return await eligibleUserUid(this.deps.auth, token);
+    } catch (error) {
+      if (error instanceof IneligibleIdentityError) throw new ApiError(403, 'identity_not_allowed');
       throw new ApiError(401, 'invalid_id_token');
     }
   }
@@ -145,6 +146,14 @@ export class PairingService {
       if (record.status === 'pending') return { status: 'pending' } as const;
       if (record.status === 'consumed') throw new ApiError(409, 'pairing_consumed');
       if (!record.approvedUid) throw new ApiError(500, 'invalid_pairing_state');
+      // Reject historical approvals for anonymous/deleted/disabled accounts
+      // before consumption; the TV poll token never substitutes for identity.
+      try { await assertEligibleAccount(this.deps.auth, record.approvedUid); }
+      catch { throw new ApiError(403, 'identity_not_allowed'); }
+      const access = await tx.getAccess(record.approvedUid);
+      if (access?.active !== true || access.apps?.[record.app] !== true) {
+        throw new ApiError(403, 'app_access_denied');
+      }
       tx.updatePairing(id, { status: 'consumed', consumedAt: FieldValue.serverTimestamp() });
       return { status: 'approved', uid: record.approvedUid } as const;
     });

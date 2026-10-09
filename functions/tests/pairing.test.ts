@@ -16,13 +16,16 @@ const PORTAL = 'https://portal.test';
 function fixture() {
   let clock = Date.parse('2026-09-30T12:00:00.000Z');
   const firestore = fakeFirestore(() => clock);
-  firestore.rows.set('access/user-a', { active: true, apps: { cartonLleno: true, novaStar: true } });
-  firestore.rows.set('access/user-b', { active: true, apps: { cartonLleno: true, novaStar: true } });
+  firestore.rows.set('access/user-a', { active: true, apps: { cartonLleno: true, novaStar: true, contrapalabra: true } });
+  firestore.rows.set('access/user-b', { active: true, apps: { cartonLleno: true, novaStar: true, contrapalabra: true } });
   const auth = {
-    verifyIdToken: vi.fn(async (token: string) => {
-      if (token !== 'id-user-a' && token !== 'id-user-b') throw new Error('invalid token');
-      return { uid: token.slice(3) };
+    verifyIdToken: vi.fn(async (token: string, _checkRevoked?: boolean) => {
+      void _checkRevoked;
+      if (!['id-user-a', 'id-user-b', 'id-user-anon'].includes(token)) throw new Error('invalid token');
+      return { uid: token.slice(3), firebase: { sign_in_provider: token === 'id-user-anon' ? 'anonymous' : 'password' } };
     }),
+    getUser: vi.fn(async (uid: string) => ({ uid, disabled: false,
+      providerData: uid === 'user-anon' ? [] : [{ providerId: 'password' }] })),
     createCustomToken: vi.fn(async (uid: string) => `custom-token-for-${uid}`),
   };
   const service = new PairingService({
@@ -145,8 +148,64 @@ describe('TV pairing HTTP API with injected Auth and local Firestore double', ()
   it('rejects an invalid Firebase token and does not change state', async () => {
     const p = await f.create();
     expect((await f.approve(p.pairingId, p.code, 'invalid-id-token')).status).toBe(401);
-    expect(f.auth.verifyIdToken).toHaveBeenCalledWith('invalid-id-token');
+    expect(f.auth.verifyIdToken).toHaveBeenCalledWith('invalid-id-token', true);
     expect(f.rows.get(`tvPairings/${p.pairingId}`)?.status).toBe('pending');
+  });
+
+  it.each(['novaStar', 'cartonLleno', 'contrapalabra'])('rejects anonymous approval for %s even with valid access', async app => {
+    f.rows.set('access/user-anon', { active: true, apps: { [app]: true } });
+    const p = await f.create(app), before = new Map(f.rows);
+    expect((await f.approve(p.pairingId, p.code, 'id-user-anon')).status).toBe(403);
+    expect(f.rows).toEqual(before);
+    expect((await f.poll(p.pairingId, p.pollToken)).body).toEqual({ status: 'pending' });
+    expect(f.auth.createCustomToken).not.toHaveBeenCalled();
+  });
+
+  it.each(['novaStar', 'cartonLleno', 'contrapalabra'])('rejects anonymous approval for %s without access', async app => {
+    const p = await f.create(app), before = new Map(f.rows);
+    expect((await f.approve(p.pairingId, p.code, 'id-user-anon')).status).toBe(403);
+    expect(f.rows).toEqual(before);
+    expect(f.auth.createCustomToken).not.toHaveBeenCalled();
+  });
+
+  it('rejects an anonymous session even when its account has a linked password provider', async () => {
+    f.rows.set('access/user-anon', { active: true, apps: { cartonLleno: true } });
+    f.auth.getUser.mockResolvedValueOnce({ uid: 'user-anon', disabled: false, providerData: [{ providerId: 'password' }] });
+    const p = await f.create(), before = new Map(f.rows);
+    expect((await f.approve(p.pairingId, p.code, 'id-user-anon')).body).toEqual({ error: 'identity_not_allowed' });
+    expect(f.rows).toEqual(before);
+    expect(f.auth.createCustomToken).not.toHaveBeenCalled();
+  });
+
+  it.each(['expired', 'revoked'])('rejects %s approval tokens using revocation checking', async reason => {
+    const p = await f.create(), before = new Map(f.rows);
+    f.auth.verifyIdToken.mockImplementationOnce(async (_token, checkRevoked) => {
+      expect(checkRevoked).toBe(true); throw new Error(`private-provider-${reason}`);
+    });
+    const response = await f.approve(p.pairingId, p.code);
+    expect(response.status).toBe(401); expect(response.body).toEqual({ error: 'invalid_id_token' });
+    expect(f.auth.getUser).not.toHaveBeenCalled();
+    expect(f.rows).toEqual(before); expect(f.auth.createCustomToken).not.toHaveBeenCalled();
+  });
+
+  it.each(['disabled', 'deleted', 'mismatched', 'no-password'])('rejects %s Auth accounts despite valid access', async condition => {
+    const p = await f.create(), before = new Map(f.rows);
+    if (condition === 'deleted') f.auth.getUser.mockRejectedValueOnce(new Error('private-user-not-found'));
+    else f.auth.getUser.mockResolvedValueOnce({ uid: condition === 'mismatched' ? 'another-user' : 'user-a',
+      disabled: condition === 'disabled', providerData: condition === 'no-password' ? [] : [{ providerId: 'password' }] });
+    const response = await f.approve(p.pairingId, p.code);
+    expect(response.status).toBe(condition === 'no-password' ? 403 : 401);
+    expect(f.rows).toEqual(before); expect(f.auth.createCustomToken).not.toHaveBeenCalled();
+  });
+
+  it.each(['novaStar', 'cartonLleno', 'contrapalabra'])('requires existing, active and app-specific access for %s', async app => {
+    for (const access of [undefined, { active: false, apps: { [app]: true } }, { active: true, apps: { [app]: false } }]) {
+      const local = fixture(), p = await local.create(app);
+      if (access) local.rows.set('access/user-a', access); else local.rows.delete('access/user-a');
+      const before = new Map(local.rows);
+      expect((await local.approve(p.pairingId, p.code)).status).toBe(403);
+      expect(local.rows).toEqual(before); expect(local.auth.createCustomToken).not.toHaveBeenCalled();
+    }
   });
 
   it.each([
@@ -162,7 +221,7 @@ describe('TV pairing HTTP API with injected Auth and local Firestore double', ()
     expect(f.rows.has(`tvPairings/${p.pairingId}/security/approval`)).toBe(false);
   });
 
-  it.each(['cartonLleno', 'novaStar'])('approves %s for the permitted UID atomically', async (appId) => {
+  it.each(['cartonLleno', 'novaStar', 'contrapalabra'])('approves %s for the permitted UID atomically', async (appId) => {
     const p = await f.create(appId);
     expect((await f.approve(p.pairingId, p.code)).body).toEqual({ status: 'approved' });
     const row = f.rows.get(`tvPairings/${p.pairingId}`)!;
@@ -170,6 +229,8 @@ describe('TV pairing HTTP API with injected Auth and local Firestore double', ()
     expect(row.approvedUid).toBe('user-a');
     expect(row.approvedAt).toBeInstanceOf(Timestamp);
     expect(f.auth.createCustomToken).not.toHaveBeenCalled();
+    expect(f.auth.verifyIdToken).toHaveBeenCalledWith('id-user-a', true);
+    expect(f.auth.getUser).toHaveBeenCalledWith('user-a');
   });
 
   it('uses the selected app permission for novaStar as well', async () => {
@@ -242,8 +303,8 @@ describe('TV pairing HTTP API with injected Auth and local Firestore double', ()
     expect(f.auth.createCustomToken).not.toHaveBeenCalled();
   });
 
-  it('consumes once, signs for approvedUid, and never stores the custom token', async () => {
-    const p = await f.create();
+  it.each(['novaStar', 'cartonLleno', 'contrapalabra'])('consumes %s once, signs for approvedUid, and never stores the custom token', async app => {
+    const p = await f.create(app);
     await f.approve(p.pairingId, p.code);
     const response = await f.poll(p.pairingId, p.pollToken);
     expect(response.status).toBe(200);
@@ -259,6 +320,26 @@ describe('TV pairing HTTP API with injected Auth and local Firestore double', ()
     expect(JSON.stringify([...f.rows.values()])).not.toContain('custom-token-for');
     expect((await f.poll(p.pairingId, p.pollToken)).status).toBe(409);
     expect(f.auth.createCustomToken).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['novaStar', 'cartonLleno', 'contrapalabra'])('never signs historical anonymous approvals for %s', async app => {
+    const p = await f.create(app);
+    f.rows.set('access/user-anon', { active: true, apps: { [app]: true } });
+    Object.assign(f.rows.get(`tvPairings/${p.pairingId}`)!, { status: 'approved', approvedUid: 'user-anon' });
+    const before = new Map(f.rows), response = await f.poll(p.pairingId, p.pollToken);
+    expect(response.status).toBe(403); expect(response.body).toEqual({ error: 'identity_not_allowed' });
+    expect(f.rows).toEqual(before); expect(f.auth.createCustomToken).not.toHaveBeenCalled();
+  });
+
+  it.each(['disabled', 'deleted', 'inactive', 'app-denied', 'missing-access'])('does not consume/sign if %s after approval', async condition => {
+    const p = await f.create(); await f.approve(p.pairingId, p.code);
+    if (condition === 'disabled') f.auth.getUser.mockResolvedValueOnce({ uid: 'user-a', disabled: true, providerData: [{ providerId: 'password' }] });
+    if (condition === 'deleted') f.auth.getUser.mockRejectedValueOnce(new Error('private-user-not-found'));
+    if (condition === 'inactive' || condition === 'app-denied') f.rows.set('access/user-a', { active: condition !== 'inactive', apps: { cartonLleno: condition !== 'app-denied' } });
+    if (condition === 'missing-access') f.rows.delete('access/user-a');
+    const before = new Map(f.rows);
+    expect((await f.poll(p.pairingId, p.pollToken)).status).toBe(403);
+    expect(f.rows).toEqual(before); expect(f.auth.createCustomToken).not.toHaveBeenCalled();
   });
 
   it('concurrent consumers receive at most one custom token', async () => {
