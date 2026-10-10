@@ -1,5 +1,5 @@
 ﻿param(
-  [Parameter(Mandatory=$true)][ValidateSet('novaStar','cartonLleno')][string]$App,
+  [Parameter(Mandatory=$true)][ValidateSet('novaStar','cartonLleno','contrapalabra')][string]$App,
   [Parameter(Mandatory=$true)][string]$AppRoot,
   [Parameter(Mandatory=$true)][string]$InputFile,
   [ValidateSet('DryRun','PublishPrivate','VerifyPrivate','PublishHistory')][string]$Mode='DryRun',

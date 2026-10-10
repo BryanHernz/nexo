@@ -9,7 +9,7 @@ import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 
 const exec = promisify(execFile);
-const REPOS = { novaStar: 'BryanHernz/nova-star-versiones', cartonLleno: 'BryanHernz/carton-lleno-versiones' };
+const REPOS = { novaStar: 'BryanHernz/nova-star-versiones', cartonLleno: 'BryanHernz/carton-lleno-versiones', contrapalabra: 'BryanHernz/contrapalabra' };
 import { validateManifest } from '../functions/releases-contract.cjs';
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const jsonBytes = value => Buffer.from(JSON.stringify(value, null, 2) + '\n');

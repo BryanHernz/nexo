@@ -6,17 +6,17 @@ import {tmpdir} from 'node:os';
 import {createHash} from 'node:crypto';
 import {appReleasePreflight} from '../tools/app-release-preflight.mjs';
 
-async function fixture(t) {
+async function fixture(t, app = 'novaStar') {
   const dir=await mkdtemp(path.join(tmpdir(),'nexo-app-preflight-'));
   t.after(()=>rm(dir,{recursive:true,force:true}));
   await writeFile(path.join(dir,'pubspec.yaml'),'version: 1.0.31+1033\n');
-  const input={app:'novaStar',version:'1.0.31',build:1033,releasedAt:'2026-10-02T00:00:00.000Z',notes:'Approved fixture',assets:[],compatibility:[],recommendations:{}};
+  const input={app,version:'1.0.31',build:1033,releasedAt:'2026-10-02T00:00:00.000Z',notes:'Approved fixture',assets:[],compatibility:[],recommendations:{}};
   for(const [platform,purpose,variant,architecture,format] of [
     ['windows','installer','standard','x64','exe'],['windows','updater','standard','x64','zip'],
     ...['armeabi-v7a','arm64-v8a','x86_64'].map(abi=>['android','package','standard',abi,'apk']),
     ['android','package','phone','arm64-v8a','apk'],['android','package','tv','armeabi-v7a','apk'],
   ]) {
-    const id=`novaStar-1.0.31-${purpose}-${variant}-${architecture}`;
+    const id=`${app}-1.0.31-${purpose}-${variant}-${architecture}`;
     const filename=id+'.'+format;
     const bytes=Buffer.from('approved test artifact '+architecture);
     await writeFile(path.join(dir,filename),bytes);
@@ -34,6 +34,10 @@ async function fixture(t) {
 test('app publication checks real bytes, explicit ABI assets, aliases and matching version.json offline',async t=>{
   const f=await fixture(t);
   assert.deepEqual(await appReleasePreflight('novaStar',f.dir,f.file),{app:'novaStar',version:'1.0.31',build:1033,assets:7,hashesVerified:true});
+});
+test('Contrapalabra uses the same private publication contract and ABI checks', async t => {
+  const f=await fixture(t,'contrapalabra');
+  assert.deepEqual(await appReleasePreflight('contrapalabra',f.dir,f.file),{app:'contrapalabra',version:'1.0.31',build:1033,assets:7,hashesVerified:true});
 });
 test('mismatched version/app, missing ABI, swapped phone alias and tampered bytes stop publication',async t=>{
   const f=await fixture(t);

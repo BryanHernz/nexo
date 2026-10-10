@@ -6,7 +6,7 @@ import {prepare} from './publish-release.mjs';
 // Publication metadata is explicit in the approved input, never guessed from a
 // filename. This is tooling only; neither apps nor Hosting load this module.
 export async function appReleasePreflight(app, root, inputPath) {
-  if (!['novaStar','cartonLleno'].includes(app)) throw Error('Unsupported app');
+  if (!['novaStar','cartonLleno','contrapalabra'].includes(app)) throw Error('Unsupported app');
   const pubspec = await readFile(path.join(root,'pubspec.yaml'),'utf8');
   const version = /^version:\s*(\d+\.\d+\.\d+)\+(\d+)\s*$/m.exec(pubspec);
   const input = JSON.parse(await readFile(inputPath,'utf8'));

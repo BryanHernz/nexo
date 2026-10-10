@@ -2301,3 +2301,4 @@ h2{
 .product.contrapalabra h2,.product.contrapalabra .product-brand,.product.contrapalabra .eyebrow{color:#3f6d3e}
 .product.contrapalabra .product-description{color:#53616a}.product.contrapalabra .button{background:#e8f0e5;color:#3f6d3e;border:0;border-radius:16px}
 .product.contrapalabra .product-media>img{width:100%;height:auto;border-radius:24px}.product.contrapalabra .download-status{color:#53616a}
+.contrapalabra-shots{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}.contrapalabra-shots img{width:100%;height:auto;border-radius:16px}.product.contrapalabra .download-status a{color:#3f6d3e}@media(max-width:640px){.contrapalabra-shots{grid-template-columns:1fr}}
