@@ -1,7 +1,8 @@
 import { initExperience } from './experience.mjs';
 import { initMotion } from './motion.mjs';
 import { connectPortal } from './portal-auth.mjs?v=private-v2';
-import { initPortalGate } from './portal-gate.mjs?v=public-v1';
+import { initPortalGate } from './portal-gate.mjs?v=modal-v1';
+import { initDownloadModal } from './download-modal.mjs';
 import { createReleaseClient } from './private-releases.mjs';
 
 export async function initDownloads({ document, window, apps, user, fetchImpl = fetch,
@@ -89,9 +90,11 @@ if (typeof document !== 'undefined') {
   initExperience();
   for (const button of document.querySelectorAll('[data-refresh]')) button.addEventListener('click', () => window.location.reload());
   document.getElementById('year').textContent = String(new Date().getFullYear());
-  connectPortal().then(auth => initPortalGate({ document, window, auth, onAuthorized: context =>
-    initPublicVersions({ document, ...context })
-  })).catch(() => {
+  connectPortal().then(auth => {
+    const gate = initPortalGate({ document, window, auth, onAuthorized: context =>
+      initPublicVersions({ document, ...context }) });
+    initDownloadModal({ document, window, auth, getUser: gate.getUser, signOut: gate.signOut });
+  }).catch(() => {
     // The public presentation stays available when Auth cannot initialize;
     // stable download routes still fail closed independently.
     document.getElementById('portal-message').textContent = 'No pudimos iniciar la conexión. Recarga para reintentar.';

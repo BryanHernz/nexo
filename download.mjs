@@ -7,6 +7,23 @@ export function appFromDownloadPath(pathname) {
   return match ? match[1] : null;
 }
 
+// Both portal and stable QR routes verify current access and obtain a fresh URL
+// on every attempt. A closed view or changed session cannot launch a late download.
+export async function prepareRecommendedDownload({ client, app, platform, valid = () => true, onStage = () => {} }) {
+  if (!Object.hasOwn(apps, app) || !['windows', 'phone', 'tv'].includes(platform)) throw new ReleaseError(404);
+  onStage('verifying');
+  const portal = await client.portal();
+  if (!valid()) return null;
+  if (!portal.apps.includes(app)) throw new ReleaseError(403);
+  onStage('preparing');
+  const release = await client.latest(app);
+  if (!valid()) return null;
+  const assetId = release.recommendations[platform];
+  if (!assetId || !release.assets.some(asset => asset.id === assetId)) throw new ReleaseError(404);
+  const result = await client.download(app, release.version, assetId);
+  return valid() ? { release, result } : null;
+}
+
 export function initDownloadPage({ document, window, auth,
   clientFor = user => createReleaseClient({ user }), navigate = url => window.location.assign(url) }) {
   const app = appFromDownloadPath(window.location.pathname);
@@ -54,16 +71,11 @@ export function initDownloadPage({ document, window, auth,
     render('verifying', 'Verificando acceso…');
     try {
       const client = clientFor(user);
-      // Recheck current server-owned access on every attempt; never cache it locally.
-      const portal = await client.portal();
-      if (!valid()) return;
-      if (!portal.apps.includes(app)) throw new ReleaseError(403);
-      render('preparing', `Preparando la descarga para ${platform === 'windows' ? 'Windows' : platform === 'tv' ? 'Android TV / Google TV' : 'Android'}…`);
-      const release = await client.latest(app);
-      if (!valid()) return;
-      const assetId = release.recommendations[platform];
-      const result = await client.download(app, release.version, assetId);
-      if (!valid()) return;
+      const prepared = await prepareRecommendedDownload({ client, app, platform, valid,
+        onStage: state => render(state, state === 'verifying' ? 'Verificando acceso…' :
+          `Preparando la descarga para ${platform === 'windows' ? 'Windows' : platform === 'tv' ? 'Android TV / Google TV' : 'Android'}…`) });
+      if (!prepared || !valid()) return;
+      const { release, result } = prepared;
       // The temporary URL exists only in this request; never attach it to the DOM or persist it.
       navigate(result.url);
       busy = false;

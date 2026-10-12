@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 export const PUBLIC_FILES = Object.freeze([
   'index.html', 'styles.css', 'app.js', 'experience.mjs', 'gallery.mjs', 'motion.mjs', 'config.mjs',
   'portal-auth.mjs', 'portal-gate.mjs', 'private-releases.mjs',
-  'download.html', 'download.mjs', 'download-page.mjs',
+  'download.html', 'download.mjs', 'download-page.mjs', 'download-modal.mjs',
   'pair.html', 'pair-base.css', 'pair.css', 'pair.mjs', 'pairing.mjs', 'pair-auth.mjs', 'pair-config.mjs',
 ]);
 const REQUIRED_SCREENS = ['nova-library', 'nova-duet', 'carton-75', 'carton-remote']

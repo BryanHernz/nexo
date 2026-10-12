@@ -125,5 +125,5 @@ export function initPortalGate({ document, window, auth, onAuthorized = () => {}
     ++revision; currentUser = null; resetMetadata();
     action.textContent = 'Iniciar sesión'; message.textContent = 'No pudimos restaurar la sesión. Vuelve a iniciar sesión.';
   });
-  return { session, signOut, stop: () => { ++revision; unsubscribe(); } };
+  return { session, signOut, getUser: () => currentUser, stop: () => { ++revision; unsubscribe(); } };
 }

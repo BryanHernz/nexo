@@ -2701,3 +2701,29 @@ h2{
  .hub-selectors{top:var(--hub-selector-top)}
  .hub-art>.gallery-toolbar{top:calc(var(--hub-selector-top) + 176px)}
 }
+
+/* Temporary download preparation stays in the portal, with each product's identity. */
+.download-modal{--download-accent:#526c51;--download-ink:#243326;--download-panel:#eaf0e5;--download-button-ink:#fff;width:min(480px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;padding:36px;border:0;border-radius:24px;background:var(--download-panel);color:var(--download-ink);box-shadow:0 24px 80px #0006;font-family:ContrapalabraAtkinson,var(--font)}
+.download-modal::backdrop{background:#13191baa;backdrop-filter:blur(6px)}
+.download-modal[data-app='nova-star']{--download-accent:#ffb156;--download-ink:#f2eee8;--download-panel:#252628;--download-button-ink:#29231d;font-family:NovaManrope,var(--font)}
+.download-modal[data-app='carton-lleno']{--download-accent:#f5d64c;--download-ink:#473f26;--download-panel:#f8edc9;--download-button-ink:#473f26;font-family:CartonNunito,var(--font)}
+.download-modal[data-app='carton-lleno'] h2{font-family:CartonFredoka,var(--font);font-weight:600}
+.download-modal h2{font-size:clamp(23px,5vw,28px);line-height:1.2;letter-spacing:-.025em;margin:12px 24px 8px 0}
+.download-modal-kicker{font-size:10px;letter-spacing:.12em;font-weight:800;margin:0;color:var(--download-accent)}
+.download-modal[data-app='carton-lleno'] .download-modal-kicker{color:#776018}
+.download-modal-platform{font-size:14px;margin:0;opacity:.8}
+.download-modal-close{position:absolute;right:12px;top:12px;width:44px;height:44px;border:0;border-radius:50%;background:transparent;color:inherit;font-size:28px;cursor:pointer}
+.download-modal-status{display:flex;align-items:center;gap:14px;min-height:100px;padding:24px 0;line-height:1.65;font-size:14px}
+.download-modal-status p{margin:0}
+.download-modal-spinner{flex:0 0 20px;width:20px;height:20px;border:2px solid var(--download-accent);border-right-color:transparent;border-radius:50%;animation:download-spin .9s linear infinite}
+.download-modal:not([data-state='preparing']):not([data-state='verifying']) .download-modal-spinner{display:none}
+.download-modal-actions{display:flex;flex-wrap:wrap;gap:10px}
+.download-modal-actions button{min-height:44px;padding:12px 18px;border:0;border-radius:12px;font:inherit;font-size:13px;font-weight:800;cursor:pointer;transition:filter .2s ease,transform .2s ease}
+.download-modal-retry{background:var(--download-accent);color:var(--download-button-ink)}
+.download-modal-done{background:transparent;color:inherit}
+.download-modal button:hover{filter:brightness(.95)}
+.download-modal button:active{transform:translateY(1px)}
+.download-modal button:focus-visible{outline:2px solid var(--download-accent);outline-offset:3px}
+@keyframes download-spin{to{transform:rotate(360deg)}}
+@media(max-width:480px){.download-modal{padding:30px 24px}.download-modal h2{margin-right:20px}}
+@media(prefers-reduced-motion:reduce){.download-modal-spinner{animation:none}.download-modal button{transition:none}}

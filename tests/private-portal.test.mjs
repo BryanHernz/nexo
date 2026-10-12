@@ -198,5 +198,5 @@ test('el nuevo gate no se incluye en pairing y el build copia sus dependencias i
 
 test('los módulos del nuevo gate evitan la configuración pública cacheada', () => {
   assert.match(readFileSync(new URL('../portal-gate.mjs', import.meta.url), 'utf8'), /config\.mjs\?v=private-v2/);
-  assert.match(html, /app\.js\?v=public-v1/);
+  assert.match(html, /app\.js\?v=modal-v1/);
 });
