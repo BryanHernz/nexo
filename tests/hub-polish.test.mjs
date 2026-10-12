@@ -24,9 +24,9 @@ test('login split muestra arte real sin catálogo privado; navbar sin explorar y
   assert.doesNotMatch(doc.querySelector('.header').textContent, /Explorar aplicaciones/);
   assert.ok(doc.getElementById('portal-logout').classList.contains('quiet-action'));
   assert.ok(!doc.getElementById('portal-logout').classList.contains('button'));
-  assert.equal(doc.querySelectorAll('.login-world .login-screen').length, 2);
+  assert.equal(doc.querySelectorAll('.login-world .login-screen').length, 3);
   const planes = [...doc.querySelectorAll('.login-scenes [data-parallax]')];
-  assert.equal(planes.length, 2);
+  assert.equal(planes.length, 3);
   assert.ok(Number(planes[0].dataset.parallax) > 0 && Number(planes[1].dataset.parallax) < 0);
   assert.ok(planes.every(plane => Number(plane.dataset.parallaxLimit) <= 16));
   assert.doesNotMatch(read('index.html'), /data-download|downloadEndpoint|X-Goog-Signature|signup/);

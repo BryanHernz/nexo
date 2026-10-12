@@ -1,8 +1,6 @@
 import { initMotion } from './motion.mjs';
-
-export function validScreenshotPath(value) {
-  return typeof value === 'string' && /^assets\/screens\/[a-z0-9-]+\.webp$/.test(value);
-}
+import { initGalleryCarousel, validScreenshotPath } from './gallery.mjs';
+export { validScreenshotPath } from './gallery.mjs';
 
 export function initExperience() {
   if (typeof document === 'undefined') return;
@@ -31,31 +29,7 @@ export function initExperience() {
   window.matchMedia('(min-width: 901px)').addEventListener('change', () => setMenu(false));
 
   for (const list of document.querySelectorAll('.gallery-controls')) {
-    const tabs = [...list.querySelectorAll('[role="tab"]')];
-    const select = button => {
-      if (!validScreenshotPath(button.dataset.image)) return;
-      const image = document.getElementById(button.getAttribute('aria-controls'));
-      if (!image) return;
-      for (const tab of tabs) {
-        tab.setAttribute('aria-selected', String(tab === button));
-        tab.tabIndex = tab === button ? 0 : -1;
-      }
-      image.src = button.dataset.image;
-      image.alt = button.dataset.caption;
-      image.closest('[data-lightbox]').dataset.lightbox = button.dataset.image;
-    };
-    tabs.forEach((button, index) => {
-      button.addEventListener('click', () => select(button));
-      button.addEventListener('keydown', event => {
-        let next;
-        if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
-        if (event.key === 'ArrowLeft') next = (index + tabs.length - 1) % tabs.length;
-        if (event.key === 'Home') next = 0;
-        if (event.key === 'End') next = tabs.length - 1;
-        if (next === undefined) return;
-        event.preventDefault(); select(tabs[next]); tabs[next].focus();
-      });
-    });
+    initGalleryCarousel(list);
   }
   const dialog = document.getElementById('image-dialog');
   let opener;

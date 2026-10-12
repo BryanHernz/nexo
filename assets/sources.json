@@ -300,5 +300,334 @@
     "sourceSha256": "91d4f9db1151a0d52131b827494fb6bfe03989a03b2045dbb56c20f51cb26db7",
     "transforms": [],
     "generativeRedraw": false
+  },
+  {
+    "asset": "assets/screens/contrapalabra-windows-home.png",
+    "source": "Release Contrapalabra, captura Windows de inicio",
+    "sourceSha256": "b7f2c9e1251b2fd0d7f7d90493a673738186f8f63cf579af1105d3bb381408cc",
+    "sourceSize": [
+      2560,
+      1440
+    ],
+    "transforms": {},
+    "generativeRedraw": false
+  },
+  {
+    "asset": "assets/screens/contrapalabra-windows-catalogue.png",
+    "source": "Release Contrapalabra, captura Windows de catálogo",
+    "sourceSha256": "6961c9a478cedbbf560715c04da2ac093fb986ef91a19a9227f679bdabd21522",
+    "sourceSize": [
+      2560,
+      1440
+    ],
+    "transforms": {},
+    "generativeRedraw": false
+  },
+  {
+    "asset": "assets/screens/contrapalabra-windows-archive.png",
+    "source": "Release Contrapalabra, captura Windows de Archivo verbal",
+    "sourceSha256": "a9b928c0cfe44ac558f26fd090e74494b073dfec58e332bc322b85b5fb515931",
+    "sourceSize": [
+      2560,
+      1440
+    ],
+    "transforms": {},
+    "generativeRedraw": false
+  },
+  {
+    "asset": "assets/screens/contrapalabra-controller.png",
+    "source": "contrapalabra/docs/fase-1-6/pwa-vertical.png; ejemplo real del control PWA documentado en Fase 1.6",
+    "sourceSha256": "1cebc8261d886bd056929b6504956c6f17c2b34ce45814120055f0ff53d48881",
+    "sourceSize": [
+      393,
+      740
+    ],
+    "transforms": {},
+    "generativeRedraw": false
+  },
+  {
+    "asset": "assets/screens/nova-library-20261012.webp",
+    "source": "Nova Star instalada, captura directa 2026-10-12 (library)",
+    "sourceSha256": "4a182bc501a837516d66d5d91c922a3dc469c3e5fbb46eb494429fb0c2bec838",
+    "sourceSize": [
+      2560,
+      1440
+    ],
+    "transforms": {
+      "accountLabelMasked": true,
+      "accountLabelMaskBounds": [
+        1698,
+        46,
+        1810,
+        76
+      ],
+      "maxWidth": 1600
+    },
+    "generativeRedraw": false
+  },
+  {
+    "asset": "assets/screens/nova-detail-20261012.webp",
+    "source": "Nova Star instalada, captura directa 2026-10-12 (detail)",
+    "sourceSha256": "19223d1602455215fa1bbdd4fdf0829797a2e4664b89e21a4105efa71277338e",
+    "sourceSize": [
+      2560,
+      1440
+    ],
+    "transforms": {
+      "accountLabelMasked": true,
+      "accountLabelMaskBounds": [
+        1698,
+        46,
+        1810,
+        76
+      ],
+      "maxWidth": 1600
+    },
+    "generativeRedraw": false
+  },
+  {
+    "asset": "assets/screens/nova-session-20261012.webp",
+    "source": "Nova Star instalada, captura directa 2026-10-12 (session)",
+    "sourceSha256": "6395241204ce0fbb6bfb6fba548a4a3f00d687976cec42b1bd013fd222bd37ca",
+    "sourceSize": [
+      2560,
+      1440
+    ],
+    "transforms": {
+      "accountLabelMasked": true,
+      "accountLabelMaskBounds": [
+        1698,
+        46,
+        1810,
+        76
+      ],
+      "maxWidth": 1600
+    },
+    "generativeRedraw": false
+  },
+  {
+    "asset": "assets/screens/nova-tournament-20261012.webp",
+    "source": "Nova Star instalada, captura directa 2026-10-12: configuración Propuestas de los dos; cuatro participantes de demostración, sin resultados de canto",
+    "sourceSha256": "17f9f7e4409b5000b614052ea711b50763beef7d30e81bf0cfc2e3351726488a",
+    "sourceSize": [
+      2560,
+      1440
+    ],
+    "transforms": {
+      "accountLabelMasked": true,
+      "accountLabelMaskBounds": [
+        1698,
+        46,
+        1810,
+        76
+      ],
+      "playerLabelMasked": true,
+      "playerLabelMaskBounds": [
+        [
+          790,
+          735,
+          841,
+          757
+        ]
+      ],
+      "maxWidth": 1600
+    },
+    "generativeRedraw": false
+  },
+  {
+    "asset": "assets/screens/nova-bracket-20261012.webp",
+    "source": "Nova Star instalada, captura directa 2026-10-12: árbol de duelos; cuatro participantes de demostración, sin resultados de canto",
+    "sourceSha256": "c73afb5cde1e9afe1cc0c54f9f694e8e8d8c0c3b24e574ddfceb07d2988a13ab",
+    "sourceSize": [
+      2560,
+      1440
+    ],
+    "transforms": {
+      "accountLabelMasked": true,
+      "accountLabelMaskBounds": [
+        1698,
+        46,
+        1810,
+        76
+      ],
+      "playerLabelMasked": true,
+      "playerLabelMaskBounds": [
+        [
+          398,
+          716,
+          451,
+          738
+        ],
+        [
+          869,
+          761,
+          927,
+          783
+        ],
+        [
+          869,
+          864,
+          927,
+          886
+        ],
+        [
+          1903,
+          679,
+          1956,
+          701
+        ]
+      ],
+      "maxWidth": 1600
+    },
+    "generativeRedraw": false
+  },
+  {
+    "asset": "assets/screens/nova-fiesta-20261012.webp",
+    "source": "Nova Star instalada, captura directa 2026-10-12: Fiesta activa, ronda 1 de 5, selección manual; cuatro participantes de demostración, sin resultados de canto",
+    "sourceSha256": "97f4bf85e353394fcd30333221ed02891557ef0e59f9dfb5cb0b214934e10109",
+    "sourceSize": [
+      2560,
+      1440
+    ],
+    "transforms": {
+      "accountLabelMasked": true,
+      "accountLabelMaskBounds": [
+        1698,
+        46,
+        1810,
+        76
+      ],
+      "playerLabelMasked": true,
+      "playerLabelMaskBounds": [
+        [
+          1061,
+          1334,
+          1111,
+          1355
+        ]
+      ],
+      "maxWidth": 1600
+    },
+    "generativeRedraw": false
+  },
+  {
+    "asset": "assets/screens/nova-microphone-connected-20261012.png",
+    "source": "Nova Star: teléfono conectado por Wi-Fi; captura real mediante Enlace a Windows el 2026-10-12",
+    "sourceSha256": "8d2db2f07b20df2cbb79536141624cd69120556b9bf041db0694274aabf76df4",
+    "sourceSize": [
+      472,
+      1075
+    ],
+    "transforms": {
+      "cropBounds": [
+        1,
+        96,
+        470,
+        1034
+      ],
+      "statusBarRemoved": true,
+      "bottomSystemBarRemoved": true,
+      "rotationDegrees": 180,
+      "playerLabelMasked": true,
+      "playerLabelMaskBounds": [
+        298,
+        155,
+        353,
+        183
+      ]
+    },
+    "generativeRedraw": false
+  },
+  {
+    "asset": "assets/screens/nova-fiesta-proposals-20261012.webp",
+    "source": "Nova Star instalada: Fiesta con cuatro participantes, propuestas, ronda 1 de 5; sin canciones cantadas ni resultados",
+    "sourceSha256": "2008def35090f32f4ae61d67f659826e6d3cd246b8dff2bd64d50209206e2535",
+    "sourceSize": [
+      2560,
+      1440
+    ],
+    "transforms": {
+      "accountLabelMasked": true,
+      "playerLabelMasked": true,
+      "maskBounds": [
+        [
+          1698,
+          46,
+          1810,
+          76
+        ],
+        [
+          1061,
+          470,
+          1114,
+          493
+        ],
+        [
+          674,
+          970,
+          730,
+          994
+        ]
+      ],
+      "maxWidth": 1600
+    },
+    "generativeRedraw": false
+  },
+  {
+    "asset": "assets/screens/contrapalabra-game-20261012.png",
+    "source": "Contrapalabra instalada: partida local de demostración, Hueco exacto, tres nombres predeterminados y puntuaciones en cero",
+    "sourceSha256": "88d6ffe8cd5b4bef186172fca0ee866c7fb1ae958880a2515102f835c14f337e",
+    "sourceSize": [
+      2560,
+      1440
+    ],
+    "transforms": {},
+    "generativeRedraw": false
+  },
+  {
+    "asset": "assets/fonts/nova-manrope.ttf",
+    "source": "Nova Star: tipografía Manrope y licencia OFL originales de assets/fonts; usada por AppTheme",
+    "sourceSha256": "3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6",
+    "transforms": {},
+    "generativeRedraw": false
+  },
+  {
+    "asset": "assets/fonts/nova-manrope-OFL.txt",
+    "source": "Nova Star: tipografía Manrope y licencia OFL originales de assets/fonts; usada por AppTheme",
+    "sourceSha256": "2e9a4958fb8e5be69eca9abc48544e1ca1898ca71edc54ac3da25cd93101881e",
+    "transforms": {},
+    "generativeRedraw": false
+  },
+  {
+    "asset": "assets/icons/hugeicons-LICENSE.txt",
+    "source": "Hugeicons 1.1.6: biblioteca stroke-rounded instalada y usada por Nova Star; símbolos SVG inline en index.html",
+    "sourceSha256": "6e2dddec58190205b66a1ac9fa7555f3cfb3fcde332e9cfad81b153283a25c28",
+    "transforms": {
+      "symbols": {
+        "mic": "Mic02",
+        "cup": "Champion",
+        "party": "Party",
+        "android": "Android",
+        "windows": "WindowsNew",
+        "screen": "TvSmart",
+        "users": "UserGroup",
+        "game": "GameController01",
+        "down": "Download04",
+        "music": "MusicNote02",
+        "wifi": "Wifi01",
+        "print": "Printer",
+        "grid": "GridView",
+        "play": "Play",
+        "pause": "Pause",
+        "previous": "ArrowLeft01",
+        "chevron": "ArrowRight01",
+        "arrow": "ArrowRight02",
+        "refresh": "Refresh01",
+        "close": "Cancel01",
+        "expand": "FullScreen"
+      },
+      "strokeWidth": 1.8
+    },
+    "generativeRedraw": false
   }
 ]

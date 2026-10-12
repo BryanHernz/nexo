@@ -8,6 +8,7 @@ const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 test('el modulo visual no requiere DOM al importarse', () => { assert.doesNotThrow(initExperience); });
 test('la galeria solo acepta capturas locales', () => {
   assert.ok(validScreenshotPath('assets/screens/nova-microphone.webp'));
+  assert.ok(validScreenshotPath('assets/screens/contrapalabra-windows-home.png'));
   for (const invalid of ['javascript:alert(1)', '../foo.webp', 'https://example.com/x.webp', 'assets/screens/../x.webp', 'assets/screens/a.webp?x=1']) assert.equal(validScreenshotPath(invalid), false);
 });
 test('no hay nombre personal visible en el HTML principal', () => {
@@ -19,12 +20,15 @@ test('los recursos locales declarados existen', () => {
     assert.ok(existsSync(new URL(`../${match[1]}`, import.meta.url)), match[1]);
   }
 });
-test('el microfono proviene de la captura exacta y tiene rotacion de 180 grados', () => {
-  const source = JSON.parse(readFileSync(new URL('../assets/sources.json', import.meta.url))).find(x => x.asset.endsWith('nova-microphone.webp'));
-  assert.equal(source.source, '1000092031.jpg');
+test('el companion usa el teléfono realmente conectado con barras del sistema recortadas, sin IA', () => {
+  const source = JSON.parse(readFileSync(new URL('../assets/sources.json', import.meta.url))).find(x => x.asset.endsWith('nova-microphone-connected-20261012.png'));
+  assert.match(source.source, /teléfono conectado.*2026-10-12/);
+  assert.equal(source.transforms.statusBarRemoved, true);
+  assert.equal(source.transforms.bottomSystemBarRemoved, true);
+  assert.equal(source.transforms.playerLabelMasked, true);
   assert.equal(source.transforms.rotationDegrees, 180);
   assert.equal(source.generativeRedraw, false);
-  assert.match(html, /src="assets\/screens\/nova-microphone.webp"/);
+  assert.match(html, /src="assets\/screens\/nova-microphone-connected-20261012\.png"/);
 });
 test('los botones principales son planos y las secciones admiten alto completo', () => {
   const rule = css.match(/\.button\{([^}]+)\}/)[1];

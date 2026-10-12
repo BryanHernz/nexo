@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { JSDOM } from 'jsdom';
 import { APPS } from '../config.mjs';
-import { initDownloads } from '../app.js';
+import { initDownloads, initPublicVersions } from '../app.js';
 import { allowedApps, initPortalGate } from '../portal-gate.mjs';
 import { createReleaseClient, validateRelease } from '../private-releases.mjs';
+import { publicIndex } from '../tools/public-page.mjs';
 import { portalHtml, portalContent } from './portal-fixture.mjs';
 
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
@@ -27,59 +28,95 @@ function dom(t) {
   t.after(() => instance.window.close());
   return instance;
 }
-function gate(t, { record = access, loadPortal, onAuthorized = () => {}, ...extra } = {}) {
-  const { window } = dom(t);
-  window.document.getElementById('portal-content').replaceChildren();
+function gate(t, { loadPortal = async () => ({ apps: ['novaStar'], html: '<p>Not mounted</p>' }), onAuthorized = () => {} } = {}) {
+  const instance = new JSDOM(publicIndex(html, portalContent), { url: 'https://nexo-hub.web.app/' });
+  const { window } = instance; window.scrollTo = () => {};
   let signOuts = 0, signedIn;
   const auth = { subscribe: () => () => {}, signOut: async () => { signOuts++; },
-    signIn: async (email, password) => { signedIn = { email, password }; },
-    loadPortal: loadPortal ?? (async () => ({ html: portalContent, apps: record?.active === true ?
-      APPS.filter(app => record.apps?.[app.key] === true).map(app => app.key) : [] })),
-    readAccess: async () => { throw new Error('The portal must use the API only'); } };
-  const controller = initPortalGate({ document: window.document, window, auth, reload: () => {}, onAuthorized, ...extra });
+    signIn: async (email, password) => { signedIn = { email, password }; }, loadPortal };
+  const controller = initPortalGate({ document: window.document, window, auth, onAuthorized });
+  t.after(() => { controller.stop(); window.close(); });
   return { ...controller, window, document: window.document, auth, signOuts: () => signOuts, signedIn: () => signedIn };
 }
-test('sin sesión muestra login; sin JavaScript el contenido permanece oculto', async t => {
-  assert.match(html, /id="portal-login-form" hidden/);
+
+test('sin sesión muestra las tres apps y sólo rutas estables de descarga', async t => {
   const g = gate(t); await g.session(null);
-  assert.ok(g.document.getElementById('portal-content').hidden);
-  assert.equal(g.document.getElementById('portal-login-form').hidden, false);
-  assert.equal(g.document.querySelectorAll('a[href*="github.com"]').length, 0);
-  assert.doesNotMatch(html, /data-web|Web · Próximamente|signup|signInAnonymously/);
-  assert.doesNotMatch(html, /data-download|data-app|downloadEndpoint|recommendations|X-Goog-Signature/);
-});
-test('la API que deniega contenido nunca monta el portal ni una respuesta tardía de otra sesión', async t => {
-  const g = gate(t);
-  g.auth.loadPortal = async () => { throw Object.assign(new Error('denied'), { status: 403 }); };
-  await g.session(user);
-  assert.equal(g.document.getElementById('portal-content').childElementCount, 0);
-  assert.ok(g.document.getElementById('portal-content').hidden);
-});
-test('Nova autorizada aparece; Cartón, sus enlaces y sus pantallas se retiran', async t => {
-  const g = gate(t); await g.session(user);
   assert.equal(g.document.getElementById('portal-content').hidden, false);
-  assert.ok(g.document.getElementById('nova-star'));
-  assert.equal(g.document.querySelector('[data-app="carton-lleno"]'), null);
-  assert.equal(g.document.querySelector('a[href="#carton-lleno"]'), null);
-  assert.equal(g.document.querySelector('[data-product="carton-lleno"]'), null);
-  assert.doesNotMatch(g.document.getElementById('portal-content').textContent, /Cartón Lleno/);
-  assert.equal(g.document.querySelectorAll('[data-web]').length, 0);
-  assert.doesNotMatch(g.document.querySelector('.downloads-intro').textContent, /web|próximamente/i);
+  assert.equal(g.document.getElementById('portal-login').hidden, true);
+  for (const app of APPS) {
+    assert.ok(g.document.getElementById(app.id));
+    for (const target of ['windows', 'phone', 'tv']) assert.ok(g.document.querySelector(`[data-app="${app.id}"] [href="/download/${app.key}?platform=${target}"]`));
+  }
+  assert.equal(g.document.getElementById('portal-logout').textContent, 'Iniciar sesión');
+  assert.doesNotMatch(g.document.documentElement.outerHTML, /github\.com|X-Goog-Signature|downloadEndpoint|recommendations/);
 });
-test('Cartón autorizada conserva CTA, sin Nova ni ayuda del micrófono', async t => {
-  const g = gate(t, { record: { active: true, apps: { cartonLleno: true } } }); await g.session(user);
-  assert.equal(g.document.getElementById('nova-star'), null);
-  assert.equal(g.document.querySelector('.header-inner > .header-cta'), null);
-  assert.equal(g.document.querySelector('.scroll-cue').getAttribute('href'), '#carton-lleno');
-  assert.doesNotMatch(g.document.getElementById('portal-content').textContent, /Nova Star/);
+
+test('navbar abre login con el estilo aprobado; volver no exige autenticación', async t => {
+  const g = gate(t); await g.session(null);
+  const button = g.document.getElementById('portal-logout'); button.click();
+  assert.ok(button.classList.contains('nav-session'));
+  assert.equal(g.document.getElementById('portal-login').hidden, false);
+  assert.equal(g.document.getElementById('portal-login-form').hidden, false);
+  assert.equal(g.window.location.search, '?login=1');
+  g.document.getElementById('portal-back').click();
+  assert.equal(g.document.getElementById('portal-content').hidden, false);
+  assert.equal(g.window.location.search, '');
 });
-test('la API es la única autoridad; apps inválidas y errores de red fallan cerrados', async t => {
+
+test('sesión usa access del backend; descripciones públicas no conceden descargas', async t => {
+  let context;
+  const g = gate(t, { onAuthorized: value => { context = value; } }); await g.session(user);
+  assert.deepEqual(context.apps.map(app => app.key), ['novaStar']);
+  assert.equal(context.valid(), true);
+  assert.ok(g.document.getElementById('carton-lleno'));
+  assert.equal(g.document.getElementById('portal-logout').textContent, 'Cerrar sesión');
+  assert.doesNotMatch(g.document.body.textContent, /Not mounted/);
+  assert.equal(g.window.localStorage.length, 0);
+  await g.session(null); assert.equal(context.valid(), false);
+});
+
+test('metadata privada sólo se consulta para apps autorizadas; respuesta tardía no vuelve tras logout', async t => {
+  const g = gate(t), calls = [];
+  await initPublicVersions({ document: g.document, apps: [APPS[0]], user,
+    fetchImpl: async (url, options) => { calls.push({ url, options }); return { ok: true, json: async () => manifest }; } });
+  assert.equal(calls.length, 1);
+  assert.match(calls[0].url, /novaStar\/latest$/);
+  assert.equal(calls[0].options.headers.Authorization, 'Bearer local-test-id-token');
+  assert.match(g.document.querySelector('[data-app="nova-star"] [data-version]').textContent, /1\.0\.27/);
+  assert.match(g.document.querySelector('[data-app="carton-lleno"] [data-status]').textContent, /no tiene acceso/);
+  await g.session(null);
+  let resolve, valid = true;
+  const pending = initPublicVersions({ document: g.document, apps: [APPS[0]], user, valid: () => valid,
+    fetchImpl: () => new Promise(done => { resolve = done; }) });
+  await new Promise(done => setImmediate(done));
+  valid = false; resolve({ ok: true, json: async () => manifest }); await pending;
+  assert.equal(g.document.querySelector('[data-app="nova-star"] [data-version]').textContent, '');
+  assert.equal(g.window.localStorage.length, 0);
+  assert.doesNotMatch(g.document.documentElement.outerHTML, /local-test-id-token|X-Goog-Signature/);
+});
+
+test('sin access o sin conexión mantiene portada pública sin habilitar metadata privada', async t => {
+  for (const status of [403, 503]) {
+    let authorized = false;
+    const g = gate(t, { loadPortal: async () => { throw Object.assign(new Error('private detail'), { status }); }, onAuthorized: () => { authorized = true; } });
+    await g.session(user);
+    assert.equal(authorized, false);
+    assert.equal(g.document.getElementById('portal-content').hidden, false);
+    assert.doesNotMatch(g.document.body.textContent, /private detail/);
+    assert.ok([...g.document.querySelectorAll('[data-version]')].every(node => node.textContent === ''));
+  }
+});
+
+test('apps desconocidas fallan cerradas; usuario revocado vuelve a autenticar', async t => {
   for (const keys of [undefined, [], ['unknown'], [true], { novaStar: true }]) assert.equal(allowedApps(keys).length, 0);
-  const g = gate(t, { loadPortal: async () => { throw new Error('offline'); } }); await g.session(user);
-  assert.ok(g.document.getElementById('portal-content').hidden);
-  assert.match(g.document.getElementById('portal-message').textContent, /verificar tu acceso/);
+  let authorized = false;
+  const g = gate(t, { loadPortal: async () => ({ apps: ['unknown'] }), onAuthorized: () => { authorized = true; } });
+  await g.session(user); assert.equal(authorized, false);
+  g.auth.loadPortal = async () => { throw Object.assign(new Error('revoked'), { status: 401 }); };
+  await g.session(user); assert.equal(g.signOuts(), 1);
 });
-test('rechaza Anonymous sin deshabilitar el proveedor y vacía contraseña al enviar', async t => {
+
+test('rechaza Anonymous y vacía contraseña del login sin guardarla', async t => {
   const g = gate(t); await g.session({ ...user, isAnonymous: true }); assert.equal(g.signOuts(), 1);
   await g.session(null);
   const form = g.document.getElementById('portal-login-form');
@@ -90,12 +127,15 @@ test('rechaza Anonymous sin deshabilitar el proveedor y vacía contraseña al en
   assert.equal(g.signedIn().email, 'test@example.invalid');
   assert.equal(g.window.localStorage.length, 0);
 });
-test('logout oculta el portal; una lectura retrasada no vuelve a abrirlo', async t => {
-  let resolve;
-  const g = gate(t, { loadPortal: () => new Promise(done => { resolve = done; }) });
+
+test('logout conserva portada; respuesta antigua no restaura permisos ni sesión', async t => {
+  let resolve, authorized = false;
+  const g = gate(t, { loadPortal: () => new Promise(done => { resolve = done; }), onAuthorized: () => { authorized = true; } });
   const pending = g.session(user); await new Promise(done => setImmediate(done));
-  await g.session(null); resolve({ html: portalContent, apps: ['novaStar'] }); await pending;
-  assert.ok(g.document.getElementById('portal-content').hidden);
+  await g.signOut(); resolve({ html: portalContent, apps: ['novaStar'] }); await pending;
+  assert.equal(authorized, false);
+  assert.equal(g.document.getElementById('portal-content').hidden, false);
+  assert.equal(g.document.getElementById('portal-logout').textContent, 'Iniciar sesión');
 });
 test('descargas consultan API autenticada y firman bajo demanda, sin enlaces/caché persistentes', async t => {
   const { window } = dom(t), calls = [], navigated = [];
@@ -158,5 +198,5 @@ test('el nuevo gate no se incluye en pairing y el build copia sus dependencias i
 
 test('los módulos del nuevo gate evitan la configuración pública cacheada', () => {
   assert.match(readFileSync(new URL('../portal-gate.mjs', import.meta.url), 'utf8'), /config\.mjs\?v=private-v2/);
-  assert.match(html, /app\.js\?v=private-v3/);
+  assert.match(html, /app\.js\?v=public-v1/);
 });

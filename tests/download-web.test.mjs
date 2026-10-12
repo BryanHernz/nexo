@@ -37,7 +37,7 @@ function setup(t, { pathname = '/download/cartonLleno', apps = ['cartonLleno'], 
     clientFor: current => createReleaseClient({ user: current, fetchImpl: async (url, options) => {
       calls.push({ url, options });
       if (responder) return responder(url, options);
-      const app = appFromDownloadPath(pathname);
+      const app = appFromDownloadPath(window.location.pathname);
       return { ok: true, json: async () => url.endsWith('/portal') ? { apps, html: '<p>Private catalog, never mounted</p>' } :
         url.endsWith('/latest') ? release(app) : {
           url: `https://storage.googleapis.com/private/app.apk?X-Goog-Signature=test-${++signature}`,
@@ -59,7 +59,7 @@ test('sin sesión muestra sólo login y no solicita catálogo, release ni descar
   assert.equal(page.document.querySelector('[src="/app.js"]'), null);
 });
 
-for (const app of ['cartonLleno', 'novaStar']) {
+for (const app of ['cartonLleno', 'novaStar', 'contrapalabra']) {
   test(`${app}: sesión existente valida API, selecciona phone default y usa Bearer ID token`, async t => {
     const page = setup(t, { pathname: `/download/${app}`, apps: [app] });
     await page.session(user);
@@ -207,7 +207,7 @@ test('preview sirve ambas rutas y sus módulos; app inexistente HTTP 404; /pair 
     const response = await fetch(origin + path);
     assert.equal(response.status, 200);
     assert.equal(response.headers.get('cache-control'), 'no-store');
-    assert.match(await response.text(), /src="\/download-page.mjs"/);
+    assert.match(await response.text(), /src="\/download-page.mjs\?v=public-v1"/);
   }
   for (const path of ['/download/unknown', '/download/cartonLleno/extra', '/download/']) {
     assert.equal((await fetch(origin + path)).status, 404);
@@ -232,5 +232,31 @@ test('Hosting reescribe sólo apps conocidas, preserva /pair y protege respuesta
     const headers = config.hosting.headers.find(rule => rule.source === source).headers;
     assert.ok(headers.some(h => h.key === 'Cache-Control' && h.value === 'no-store'));
     assert.ok(headers.some(h => h.key === 'Referrer-Policy' && h.value === 'no-referrer'));
+  }
+});
+
+for (const platform of ['windows', 'phone', 'tv']) {
+  test(`download conserva ${platform} tras login y selecciona su recommendation`, async t => {
+    const page = setup(t, { pathname: `/download/cartonLleno?platform=${platform}` });
+    assert.equal(page.calls.length, 0);
+    const form = page.document.getElementById('download-login');
+    form.elements.email.value = 'test@example.invalid'; form.elements.password.value = 'test-password';
+    form.dispatchEvent(new page.window.Event('submit', { bubbles: true, cancelable: true }));
+    await tick();
+    assert.equal(page.calls.length, 3);
+    assert.ok(page.calls[2].url.endsWith(release().recommendations[platform]));
+    assert.equal(page.navigations.length, 1);
+    assert.doesNotMatch(page.document.documentElement.outerHTML, /X-Goog-Signature|test-password|local-test-token/);
+    assert.equal(page.window.localStorage.length, 0);
+    assert.equal(page.window.sessionStorage.length, 0);
+  });
+}
+test('platform desconocido o duplicado falla sin pedir API ni descargar', async t => {
+  for (const query of ['platform=updater', 'platform=https://evil.test', 'platform=', 'platform=phone&platform=tv']) {
+    const page = setup(t, { pathname: `/download/cartonLleno?${query}` });
+    await page.session(user);
+    assert.equal(page.calls.length, 0);
+    assert.equal(page.navigations.length, 0);
+    assert.equal(page.document.getElementById('download-card').dataset.status, '404');
   }
 });

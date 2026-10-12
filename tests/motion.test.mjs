@@ -123,11 +123,13 @@ test('modulos no necesitan navegador para ser importados', () => {
   assert.doesNotThrow(initMotion);
   assert.doesNotThrow(loadLocalLogos);
 });
-test('la identidad no usa gradientes, fuentes editoriales ni cartones simulados', async () => {
+test('la marca y botones siguen planos; los fondos admiten luces de cada app, sin cartones simulados', async () => {
   const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
   const { portalHtml } = await import('./portal-fixture.mjs');
   const html = portalHtml();
-  assert.doesNotMatch(css, /(?:linear|radial|conic)-gradient\(/i);
+  const mark = readFileSync(new URL('../assets/nexo-mark.svg', import.meta.url), 'utf8');
+  assert.doesNotMatch(mark, /linearGradient|radialGradient/);
+  assert.match(css.match(/\.button\{([^}]+)\}/)[1], /background-image:none/);
   assert.doesNotMatch(html, /<em\b|bingo-ticket|ticket-grid|bingo-ball|Juegos Bryan/);
   assert.doesNotMatch(css, /Georgia|Times New Roman|font-style:\s*italic/);
   assert.match(html, /Nexo/);

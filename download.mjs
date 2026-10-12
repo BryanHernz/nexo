@@ -10,6 +10,8 @@ export function appFromDownloadPath(pathname) {
 export function initDownloadPage({ document, window, auth,
   clientFor = user => createReleaseClient({ user }), navigate = url => window.location.assign(url) }) {
   const app = appFromDownloadPath(window.location.pathname);
+  const values = new URL(window.location.href).searchParams.getAll('platform');
+  const platform = values.length === 0 ? 'phone' : values.length === 1 && ['windows', 'phone', 'tv'].includes(values[0]) ? values[0] : null;
   const card = document.getElementById('download-card');
   const title = document.getElementById('download-title');
   const message = document.getElementById('download-message');
@@ -45,7 +47,7 @@ export function initDownloadPage({ document, window, auth,
   }
 
   async function download() {
-    if (!app || !currentUser || busy) return;
+    if (!app || !platform || !currentUser || busy) return;
     const user = currentUser, run = ++revision;
     const valid = () => run === revision && currentUser === user;
     busy = true;
@@ -56,10 +58,10 @@ export function initDownloadPage({ document, window, auth,
       const portal = await client.portal();
       if (!valid()) return;
       if (!portal.apps.includes(app)) throw new ReleaseError(403);
-      render('preparing', 'Preparando el APK para tu teléfono…');
+      render('preparing', `Preparando la descarga para ${platform === 'windows' ? 'Windows' : platform === 'tv' ? 'Android TV / Google TV' : 'Android'}…`);
       const release = await client.latest(app);
       if (!valid()) return;
-      const assetId = release.recommendations.phone;
+      const assetId = release.recommendations[platform];
       const result = await client.download(app, release.version, assetId);
       if (!valid()) return;
       // The temporary URL exists only in this request; never attach it to the DOM or persist it.
@@ -95,8 +97,8 @@ export function initDownloadPage({ document, window, auth,
     await download();
   }
 
-  if (!app) {
-    render('not-found', '404 · Aplicación no encontrada.', 404);
+  if (!app || !platform) {
+    render('not-found', '404 · Aplicación o plataforma no encontrada.', 404);
     return { session, stop: () => {} };
   }
   title.textContent = `Descargar ${apps[app]}`;

@@ -105,3 +105,22 @@
 .pair-page[data-app=contrapalabra] .pair-status{color:#53616a;background:#f4f6f5;border-color:#3f6d3e;border-radius:12px;padding:14px}
 .pair-page[data-app=contrapalabra] .pair-status[data-state=success]{color:#315830;background:#e8f0e5}
 .pair-page[data-app=contrapalabra] .pair-status[data-state=incorrect-code],.pair-page[data-app=contrapalabra] .pair-status[data-state=login-error],.pair-page[data-app=contrapalabra] .pair-status[data-state=no-access],.pair-page[data-app=contrapalabra] .pair-status[data-state=approval-denied]{color:#9b342b;background:#fff0eb}
+
+/* Current app typefaces and surrounding atmosphere, without changing pairing. */
+@font-face{font-family:NovaManrope;src:url('/assets/fonts/nova-manrope.ttf') format('truetype');font-weight:200 800;font-display:swap}
+.pair-page[data-app=novaStar]{font-family:NovaManrope,Arial,sans-serif;background:radial-gradient(ellipse at 12% 40%,#b17b3820,transparent 64%),linear-gradient(145deg,#292a2c,#1c1d1f 58%,#222325)}
+.pair-page[data-app=novaStar] .pair-card{background:#202a35a6;border-radius:24px}
+.pair-page[data-app=novaStar] .pair-card input{background:#34404d80;font-family:inherit}
+.pair-page[data-app=novaStar] .pair-button{font-family:inherit}
+.pair-page[data-app=contrapalabra]{color-scheme:light;background:radial-gradient(ellipse at 12% 55%,#d2e2c680,transparent 70%),#f4f6f5}
+.pair-page[data-app=contrapalabra] .pair-product>span{font-weight:800;letter-spacing:-.02em;color:#3f6d3e}
+.pair-page[data-app=contrapalabra] .pair-product-tagline{font-weight:800;color:#3f6d3e}
+.pair-page[data-app=contrapalabra] .pair-button{font-family:inherit;font-weight:800;min-height:54px}
+.pair-page[data-app=contrapalabra] .pair-home:hover{color:#3f6d3e}
+.pair-page[data-app=contrapalabra] .pair-result-icon{background:#e8f0e5;color:#3f6d3e;border-color:#3f6d3e}
+.pair-page[data-app=contrapalabra] .pair-note,.pair-page[data-app=contrapalabra] .pair-footer{color:#53616a}
+.pair-page[data-app=contrapalabra] .pair-status[data-state=expired],.pair-page[data-app=contrapalabra] .pair-status[data-state=already-used],.pair-page[data-app=contrapalabra] .pair-status[data-state=consumed]{color:#53616a;background:#f4f6f5}
+.pair-page[data-app=cartonLleno] .pair-home:focus-visible,.pair-page[data-app=contrapalabra] .pair-home:focus-visible{border-radius:6px}
+@media(max-width:760px){.pair-page[data-app=contrapalabra] .pair-card{padding:22px}.pair-page[data-app=contrapalabra] .pair-brand{font-size:23px}.pair-page[data-app=contrapalabra] .pair-wrap{width:min(480px,calc(100% - 32px))}}
+/* Status chips keep each app's palette without a colored left bracket. */
+.pair-page .pair-status{border-left:0}

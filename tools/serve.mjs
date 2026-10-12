@@ -2,6 +2,7 @@ import http from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { publicIndex, publicDownloadPage } from './public-page.mjs';
 import { PUBLIC_FILES } from './build.mjs';
 import { appFromDownloadPath } from '../download.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -27,7 +28,7 @@ export function createPreviewServer() {
         res.writeHead(404); return res.end('No encontrado');
       }
       if (!(await stat(target)).isFile()) throw new Error('No es un archivo');
-      const body = await readFile(target);
+      const body = pathname === '/index.html' ? publicIndex(await readFile(target, 'utf8'), await readFile(path.join(root, 'functions/portal-content.html'), 'utf8')) : pathname === '/download.html' ? publicDownloadPage(await readFile(target, 'utf8'), await readFile(path.join(root, 'index.html'), 'utf8')) : await readFile(target);
       res.writeHead(200, { 'Content-Type': types[path.extname(target)] || 'application/octet-stream', 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-store' });
       res.end(req.method === 'HEAD' ? undefined : body);
     } catch { res.writeHead(404); res.end('No encontrado'); }

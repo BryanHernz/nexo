@@ -1,7 +1,7 @@
 import { initExperience } from './experience.mjs';
 import { initMotion } from './motion.mjs';
 import { connectPortal } from './portal-auth.mjs?v=private-v2';
-import { initPortalGate } from './portal-gate.mjs?v=private-v3';
+import { initPortalGate } from './portal-gate.mjs?v=public-v1';
 import { createReleaseClient } from './private-releases.mjs';
 
 export async function initDownloads({ document, window, apps, user, fetchImpl = fetch,
@@ -55,18 +55,53 @@ export async function initDownloads({ document, window, apps, user, fetchImpl = 
   }));
 }
 
+export async function initPublicVersions({ document, apps, user, valid = () => true, fetchImpl = fetch }) {
+  const client = createReleaseClient({ user, fetchImpl });
+  const allowed = new Set(apps.map(app => app.id));
+  for (const root of document.querySelectorAll('[data-app]')) {
+    if (!allowed.has(root.dataset.app)) root.querySelector('[data-status]')?.replaceChildren(
+      document.createTextNode('Tu cuenta no tiene acceso a esta descarga.'));
+  }
+  await Promise.all(apps.map(async app => {
+    const roots = [...document.querySelectorAll(`[data-app="${app.id}"]`)];
+    try {
+      const release = await client.latest(app.key);
+      if (!valid()) return;
+      for (const root of roots) {
+        root.querySelector('[data-version]')?.replaceChildren(document.createTextNode(`v${release.version}`));
+        root.querySelector('[data-notes]')?.replaceChildren(document.createTextNode(release.notes));
+        root.querySelector('[data-status]')?.replaceChildren(document.createTextNode('Descarga privada disponible para tu cuenta.'));
+        root.querySelector('[data-date]')?.replaceChildren(document.createTextNode(new Date(release.releasedAt).toLocaleDateString('es')));
+        for (const button of root.querySelectorAll('[data-download]')) {
+          const asset = release.assets.find(a => a.id === release.recommendations[button.dataset.download]);
+          if (asset) button.querySelector('[data-size]')?.replaceChildren(document.createTextNode(`· ${(asset.size / 1024 ** 2).toFixed(1)} MB`));
+        }
+      }
+    } catch {
+      if (valid()) for (const root of roots) root.querySelector('[data-status]')?.replaceChildren(
+        document.createTextNode('No pudimos consultar la versión. La descarga volverá a verificar tu acceso.'));
+    }
+  }));
+}
+
 if (typeof document !== 'undefined') {
-  const disposeLoginMotion = initMotion();
-  document.getElementById('portal-retry').addEventListener('click', () => window.location.reload());
-  connectPortal().then(auth => initPortalGate({ document, window, auth,
-    onAuthorized: context => {
-      // Rescan the newly mounted portal; do not leave a controller bound only
-      // to the login's screenshots.
-      disposeLoginMotion?.();
-      initExperience();
-      void initDownloads({ document, window, ...context });
-    },
+  initMotion();
+  initExperience();
+  for (const button of document.querySelectorAll('[data-refresh]')) button.addEventListener('click', () => window.location.reload());
+  document.getElementById('year').textContent = String(new Date().getFullYear());
+  connectPortal().then(auth => initPortalGate({ document, window, auth, onAuthorized: context =>
+    initPublicVersions({ document, ...context })
   })).catch(() => {
+    // The public presentation stays available when Auth cannot initialize;
+    // stable download routes still fail closed independently.
     document.getElementById('portal-message').textContent = 'No pudimos iniciar la conexión. Recarga para reintentar.';
+    document.getElementById('portal-logout').setAttribute('href', '?login=1');
+    const login = () => {
+      document.getElementById('portal-content').hidden = true;
+      document.getElementById('portal-login').hidden = false;
+    };
+    document.getElementById('portal-logout').addEventListener('click', event => { event.preventDefault(); login(); });
+    if (new URL(window.location.href).searchParams.get('login') === '1') login();
+    document.getElementById('portal-retry').addEventListener('click', () => window.location.reload());
   });
 }

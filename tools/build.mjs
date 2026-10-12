@@ -1,9 +1,10 @@
 import { cp, mkdir, rm, writeFile, readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
+import { publicIndex, publicDownloadPage } from './public-page.mjs';
 import { fileURLToPath } from 'node:url';
 
 export const PUBLIC_FILES = Object.freeze([
-  'index.html', 'styles.css', 'app.js', 'experience.mjs', 'motion.mjs', 'config.mjs',
+  'index.html', 'styles.css', 'app.js', 'experience.mjs', 'gallery.mjs', 'motion.mjs', 'config.mjs',
   'portal-auth.mjs', 'portal-gate.mjs', 'private-releases.mjs',
   'download.html', 'download.mjs', 'download-page.mjs',
   'pair.html', 'pair-base.css', 'pair.css', 'pair.mjs', 'pairing.mjs', 'pair-auth.mjs', 'pair-config.mjs',
@@ -44,6 +45,8 @@ export async function buildSite() {
   await rm(destination, { recursive: true, force: true });
   await mkdir(destination, { recursive: true });
   for (const file of PUBLIC_FILES) await cp(path.join(root, file), path.join(destination, file));
+  await writeFile(path.join(destination, 'index.html'), publicIndex(await readFile(path.join(root, 'index.html'), 'utf8'), await readFile(path.join(root, 'functions/portal-content.html'), 'utf8')));
+  await writeFile(path.join(destination, 'download.html'), publicDownloadPage(await readFile(path.join(root, 'download.html'), 'utf8'), await readFile(path.join(root, 'index.html'), 'utf8')));
   await cp(path.join(root, 'assets'), path.join(destination, 'assets'), { recursive: true });
   await writeFile(path.join(destination, '.nojekyll'), '');
   const { version } = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));

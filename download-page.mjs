@@ -1,5 +1,5 @@
 import { connectFirebaseAuth } from './pair-auth.mjs';
-import { appFromDownloadPath, initDownloadPage } from './download.mjs';
+import { appFromDownloadPath, initDownloadPage } from './download.mjs?v=public-v1';
 
 try {
   // Invalid routes do not initialize Auth or request any catalog data.

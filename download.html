@@ -6,18 +6,19 @@
 <meta name="robots" content="noindex">
 <title>Descargar aplicación · Nexo</title>
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/styles.css?v=private-v1">
+<link rel="stylesheet" href="/styles.css?v=public-v1">
 </head>
 <body>
 <main class="portal-login" aria-labelledby="download-title">
   <section class="portal-login-card" id="download-card" data-state="restoring">
     <a class="brand" href="/" aria-label="Nexo, volver al portal"><img class="brand-icon" src="/assets/nexo-mark.svg" alt="">Nexo</a>
+    <p class="login-kicker">DESCARGA PRIVADA NEXO</p>
     <h1 id="download-title">Descargar aplicación</h1>
     <p id="download-message" role="status" aria-live="polite">Verificando sesión…</p>
     <form id="download-login" hidden>
       <label>Correo<input name="email" type="email" autocomplete="username" required></label>
       <label>Contraseña<input name="password" type="password" autocomplete="current-password" required></label>
-      <button class="button primary" type="submit">Iniciar sesión</button>
+      <button class="button primary login-submit" type="submit">Iniciar sesión y descargar</button>
     </form>
     <button class="button primary" id="download-retry" type="button" hidden>Reintentar</button>
     <button class="button" id="download-logout" type="button" hidden>Cerrar sesión</button>
@@ -25,6 +26,6 @@
     <noscript>Activa JavaScript para iniciar sesión y descargar. Este enlace requiere una cuenta Nexo autorizada.</noscript>
   </section>
 </main>
-<script type="module" src="/download-page.mjs"></script>
+<script type="module" src="/download-page.mjs?v=public-v1"></script>
 </body>
 </html>

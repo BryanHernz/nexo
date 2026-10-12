@@ -8,8 +8,8 @@ const css = read('styles.css');
 const motion = read('motion.mjs');
 const hero = html.slice(html.indexOf('id="inicio"'), html.indexOf('id="nova-star"'));
 
-test('la portada incluye las dos pantallas y ambos telefonos originales', () => {
-  for (const file of ['nova-duet.webp', 'carton-75.webp', 'nova-microphone.webp', 'carton-remote.webp']) assert.ok(hero.includes(file), file);
+test('la portada conserva canto y bingo, actualiza el companion e integra Contrapalabra', () => {
+  for (const file of ['nova-duet.webp', 'carton-75.webp', 'nova-microphone-connected-20261012.png', 'carton-remote.webp', 'contrapalabra-game-20261012.png']) assert.ok(hero.includes(file), file);
   assert.match(hero, /hero-phone-nova/);
   assert.match(hero, /hero-phone-carton/);
 });

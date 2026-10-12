@@ -18,15 +18,16 @@ Vista previa: http://127.0.0.1:8080/ . El servidor solo escucha en la máquina l
 
 ## Implementado
 
-- Portada más alta: mínimo de 1120 px o 112svh en escritorio, con las dos pantallas y los dos teléfonos originales. Las secciones de producto mantienen su composición aprobada.
+- Portada proporcional al viewport en escritorio, con dispositivos de Nova Star, Cartón Lleno y Contrapalabra visibles sin iniciar sesión. Las secciones de producto mantienen su composición aprobada.
 - Botones planos, sin contorno ni bisel y radio de 8 px. No hay tarjetas decorativas con bordes alrededor de las secciones.
 - Capturas reales del usuario dentro de los dispositivos. Las interfaces no se regeneraron con IA.
-- Teléfono de Nova Star más abajo que el monitor, completamente visible. Usa `1000092031.jpg` rotado 180 grados: cabeza del micrófono hacia arriba. Solo se retiró la barra inferior del sistema antes de rotarlo.
-- Galerías de biblioteca/canto/torneo/fiesta y bingo 75/90/comprobación/celebración. Se pueden ampliar, cerrar con Escape y navegar sus pestañas con teclado.
+- Nova Star: biblioteca, tocadiscos y cabina capturados directamente desde la app instalada el 12 de octubre de 2026, ocultando sólo el nombre de cuenta, sin IA. El teléfono muestra el micrófono realmente conectado por Wi-Fi: sólo se recortaron las barras del sistema, se ocultó el nombre del jugador y se giró 180 grados. El torneo muestra cuatro participantes de demostración y su árbol real, sin cantar ni generar resultados; también se muestra la selección de propuestas. La captura de canto de la portada se conserva.
+- Galerías de biblioteca/tocadiscos/cabina/canto/torneo/propuestas/fiesta, bingo 75/90/comprobación/celebración y Contrapalabra inicio/rondas/Archivo verbal. Se pueden ampliar, cerrar con Escape y navegar sus pestañas con teclado.
+- Contrapalabra comparte la composición de monitor + teléfono, galería, ampliación y motion; mantiene sus colores y tipografía. Las pantallas de Windows son las capturas reales de la release. El teléfono usa el ejemplo real del control PWA documentado en Fase 1.6, no una captura nueva de la release actual.
 - Ejemplos originales PDF de cartones de 75 y 90 bolas, con vistas previas derivadas de esos PDF.
 - Parallax por capas sobre pantallas, teléfonos y fondos, con velocidades diferentes y desplazamiento acotado. Entrada progresiva de contenido y flotación suave. En móvil se reduce la amplitud, sin desactivar todo el movimiento.
 - Animaciones activas normalmente, sin controles manuales de pausa. Respeta movimiento reducido del sistema y muestra ese estado. No altera el scroll nativo ni desplaza los botones de descarga con el parallax.
-- Portal autenticado con acceso por app. Descargas privadas mediante API Nexo: Windows (instalador EXE), Android y Android TV / Google TV. El micrófono de Nova Star conserva su acceso QR. No hay opciones Web, ZIP ni variantes técnicas públicas en el portal.
+- Portada pública con inicio de sesión para descargas y autorización por app. Descargas privadas mediante API Nexo: Windows (instalador EXE), Android y Android TV / Google TV. El micrófono de Nova Star conserva su acceso QR. No hay opciones Web, ZIP ni variantes técnicas públicas en el portal.
 - Sin nombre personal visible en los textos del portal. Se cubrió el nombre de cuenta en las capturas de biblioteca y modos de juego.
 
 ## Distribución privada
@@ -46,11 +47,23 @@ reemplazar el catálogo falta aprobar el permiso limitado a ese objeto.
 
 [Arquitectura, contratos, publicación y decisiones antes de deploy](docs/private-release-distribution.md).
 
-`index.html` entrega sólo el login Nexo. El contenido visual aprobado está en
-`functions/portal-content.html`, servido por el backend después de verificar
-Auth/access y filtrar productos. No se incluye ese contenido en `_site`.
-`config.mjs` contiene únicamente identificadores de productos. Auth comparte
-la configuración de pairing; la URL del backend permanece igual.
+La portada es pública: se puede navegar y ver capturas y botones sin iniciar
+sesión. El build y el servidor local componen `index.html` con la presentación
+versionada en `functions/portal-content.html`; no se incluyen manifests, permisos
+ni URLs de descarga firmadas. El backend conserva su respuesta autenticada.
+La navbar muestra «Iniciar sesión» o «Cerrar sesión» y el login general vuelve al
+portal. Su botón y la marca Nexo adoptan suavemente la paleta de la app visible;
+en el área común quedan neutros. Descargas conserva su fondo sin subrayado.
+Las versiones y notas se consultan sólo para las apps autorizadas por
+`GET /api/v1/portal`; no se monta HTML recibido de la API en la portada pública.
+
+Los botones van a `/download/<app>?platform=windows|phone|tv`. Si falta sesión,
+esa página muestra login y conserva la app/plataforma elegidas en la ruta.
+Con sesión existente continúa automáticamente. Cada intento vuelve a validar
+access en el backend, consulta latest y firma una URL nueva. Sin `platform`,
+los QR existentes siguen descargando `phone`. Plataformas desconocidas se
+rechazan; no se admite un destino externo ni un redirect arbitrario.
+Auth comparte la configuración de pairing; la URL del backend y `/pair` no cambian.
 
 Los repositorios privados `BryanHernz/nova-star-versiones` y
 `BryanHernz/carton-lleno-versiones` conservan el histórico, aliases y assets
@@ -73,7 +86,7 @@ Cada botón solicita una URL firmada de cinco minutos mediante el backend.
 El ID token sólo viaja en Authorization; ningún token o enlace firmado se guarda
 por código propio en localStorage. Ante falta de sesión/acceso/red, falla cerrado.
 El bucket privado y las releases oficiales ya están provisionados/importados.
-La API y el portal privado están en producción. No existe fallback público del portal.
+La presentación pública no es un fallback de descarga: no proporciona assets sin autorización.
 
 | Plataforma | Nova Star | Cartón Lleno |
 | --- | --- | --- |
@@ -89,7 +102,7 @@ Para publicar artefactos ya compilados: `npm run releases:dry-run -- input.json`
 
 `npm run build` genera `_site/` con una lista explícita de archivos públicos, incluyendo `experience.mjs`, `motion.mjs` y todos los archivos de pairing. Copia todos los assets y verifica automáticamente los archivos requeridos, las cuatro capturas principales y la igualdad de cada asset entre origen y build. No copia Functions, scripts de desarrollo, pruebas ni credenciales.
 
-El workflow de `main` ejecuta exclusivamente CI (`npm ci`, pruebas, check y build), sin publicar a GitHub Pages. Firebase conserva el target `portal` asociado a `nexo-hub` y la reescritura `/pair/**` a `/pair.html`. Esta integración no realiza deploy ni merge.
+El workflow de `main` ejecuta exclusivamente CI (`npm ci`, pruebas, check y build), sin publicar a GitHub Pages. Firebase conserva el target `portal` asociado a `nexo-hub` y la reescritura `/pair/**` a `/pair.html`. El portal se despliega exclusivamente con `firebase deploy --only hosting:portal --project nova-star-bd0d9`.
 
 ## Validación
 
@@ -141,3 +154,23 @@ Hosting `portal` apunta a **nexo-hub** y conserva `/pair/** -> /pair.html`.
 El Hosting de Nova Star permanece separado. Las pruebas locales de pairing usan
 dobles de Auth/API para evitar CORS y escrituras en producción; no enviar
 credenciales reales a una vista previa genérica.
+
+### Revisión de escenas del 12 de octubre de 2026
+
+La portada reúne los tres juegos en un monitor compartido que muestra las capturas completas. Los selectores de texto permiten elegir manualmente y los tres teléfonos permanecen juntos bajo la pantalla. Cartón conserva sus cartones originales de 75 y 90 bolas y los PDF: el contorno CSS oculta sólo las esquinas blancas exteriores, sin retocar números ni contenido impreso. Las bases de notebook de la portada y de Cartón se sustituyeron por cuello y pie de monitor.
+
+Contrapalabra muestra una captura real de una partida local de Hueco exacto con Luna, Nico y Sol (nombres predeterminados), junto a Inicio, Rondas y Archivo verbal. Fiesta muestra la primera ronda con cuatro participantes y una propuesta enviada desde el teléfono, sin cantar ni generar puntos. Los nombres personales de Nova se ocultan con la máscara local autorizada; no se recreó ninguna interfaz con IA. La imagen del mando de Contrapalabra sigue siendo la referencia real de Fase 1.6, no una captura nueva de esta versión.
+
+### Portada y galerías compartidas
+
+Los cambios usan un fundido de 600 ms y un contador con barra de tiempo. La portada destaca el teléfono de la app visible y alterna las capturas completas de los tres juegos visibles públicamente, sin cortes ni recortes diagonales. Las galerías de Nova, Cartón y Contrapalabra avanzan cada cuatro segundos mientras su monitor está visible. Las pestañas, anterior/siguiente y el teclado permiten elegir una captura; esa interacción pausa el avance hasta pulsar Reproducir. El avance también se suspende al pasar el puntero, abrir una imagen o cambiar de pestaña. `prefers-reduced-motion` mantiene las galerías en modo manual. El control de galería no modifica el parallax global.
+
+Los fondos del Hub combinan tonos crema, carbón/ámbar y verde, con Manrope original de Nova (licencia OFL incluida), Nunito/Fredoka de Cartón y Atkinson de Contrapalabra. Las tres vinculaciones conservan sus temas propios y el acceso independiente de `/pair`; sólo se ajusta su presentación. La revisión local `/__review/pair-word` permite revisar también Contrapalabra sin crear ni aprobar un pairing real.
+
+La raíz del servidor de revisión visual redirige a /__review/portal: es una demostración sin Firebase ni peticiones a la API. Los campos están deshabilitados y el botón Ver portal de demostración abre los tres juegos de prueba. La autenticación real se comprueba sólo en el dominio oficial; el backend mantiene el rechazo de otros orígenes.
+
+El área común usa una base de grafito con iluminación que cambia suavemente según
+la app destacada. El monitor conserva la altura y muestra las capturas completas;
+los teléfonos se superponen ligeramente donde hay espacio y sus selectores se
+alinean a su base. Las escenas de cada producto se centran junto al texto, con
+espacio suficiente para las filas de controles en pantallas angostas.
