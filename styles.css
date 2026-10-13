@@ -2702,6 +2702,43 @@ h2{
  .hub-art>.gallery-toolbar{top:calc(var(--hub-selector-top) + 176px)}
 }
 
+/* Size device corners against their own width, not the viewport or scene.
+   Inner corners follow the bezel so small frames keep the same silhouette. */
+.phone,.monitor{container-type:inline-size}
+.phone[data-float]>.motion-float{
+  --phone-radius:clamp(6px,13cqw,29px);
+  --phone-bezel:7px;
+  border-radius:var(--phone-radius)
+}
+.phone .phone-screen,.hero .hero-phone .phone-screen{
+  border-radius:max(2px,calc(var(--phone-radius) - var(--phone-bezel)))
+}
+.hero .hub-controllers .hero-phone>.motion-float{
+  --phone-radius:clamp(6px,13cqw,24px);
+  --phone-bezel:5px;
+  border-radius:var(--phone-radius)
+}
+.hero .hub-controllers .hero-phone .phone-screen{
+  border-radius:max(2px,calc(var(--phone-radius) - var(--phone-bezel)))
+}
+.monitor .device-screen{
+  --monitor-radius:clamp(4px,2cqw,12px);
+  --monitor-bezel:7px;
+  border-radius:var(--monitor-radius)
+}
+.hero .hub-monitor .hub-screen{
+  --monitor-radius:clamp(4px,2.5cqw,16px);
+  --monitor-bezel:var(--hub-bezel);
+  border-radius:var(--monitor-radius)
+}
+.monitor .device-screen>img{
+  border-radius:max(1px,calc(var(--monitor-radius) - var(--monitor-bezel)))
+}
+@media(max-width:600px){
+  .phone[data-float]>.motion-float{--phone-bezel:5px}
+  .hero .hub-controllers .hero-phone>.motion-float{--phone-bezel:3px}
+}
+
 /* Temporary download preparation stays in the portal, with each product's identity. */
 .download-modal{--download-accent:#526c51;--download-ink:#243326;--download-panel:#eaf0e5;--download-button-ink:#fff;width:min(480px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;padding:36px;border:0;border-radius:24px;background:var(--download-panel);color:var(--download-ink);box-shadow:0 24px 80px #0006;font-family:ContrapalabraAtkinson,var(--font)}
 .download-modal::backdrop{background:#13191baa;backdrop-filter:blur(6px)}
